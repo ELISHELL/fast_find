@@ -11,7 +11,7 @@ import { addHistory, clearHistory, readHistory } from './history.js'
 import { PluginVMClass } from './plugin_runtime.js'
 import { ScopePlugin } from '../plugins/ScopePlugin.js'
 import { log } from './log.js'
-
+import figlet from 'figlet';
 
 async function fileExists(p: string) {
   try {
@@ -151,6 +151,15 @@ function makeNameMatcher(query: string) {
 }
 
 const main = async () => {
+
+  console.log(chalk.cyan(figlet.textSync("Fast Find", {
+    // font: "doh",
+    // font: "Slant",
+    font: "Big",
+    horizontalLayout: "fitted",
+    verticalLayout: "default",
+  })))
+
   // 顶层操作选择
   const action = await select({
     message: '请选择操作',
@@ -233,6 +242,7 @@ const main = async () => {
   for (const f of filtered) {
     console.log(chalk.green(f.fullPath))
   }
+  console.log(" ");
 
   // 写入历史
   await addHistory({ path: rootDir, keyword, time: Date.now() })

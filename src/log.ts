@@ -29,7 +29,7 @@ export const log = (ctx: logCtx, ...args: any[]) => {
         stdout.clear();
     }
     if (ctx == "clear") {
-        stdout("  \r\n\r");
+        stdout("  \r");
         stdout.clear();
     }
 }
