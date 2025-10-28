@@ -83,6 +83,9 @@ const ScopePlugin = (vm: PluginVM<ScopeCtxWrap>, conf?: any) => {
       if (temp.isSvn) {
         versionManger = chalk.cyan("(svn)")
       }
+      if(path == process.cwd()) {
+        versionManger += chalk.magenta(" ⭐⭐⭐ ");
+      }
       if (!sup.isMaven && temp.isMaven) {
         slog("stable", chalk.yellow(`发现 maven  项目:`), chalk.blue(path), versionManger);
         temp.needClear++;

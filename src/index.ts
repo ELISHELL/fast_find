@@ -200,6 +200,8 @@ const main = async () => {
     keyword = ans || ''
   }
 
+  console.log(`\r\n`, chalk.cyan(`开始扫描目录：`), chalk.red(`${rootDir}`), chalk.cyan(` ，搜索关键词`), chalk.red(`${keyword || '(全部)'}`), `\r\n`);
+
   const t0 = Date.now()
   // 加载配置文件：从选定的 当前执行目录 开始向上查找 .file_ignore
   const ig = await loadIgnore(process.cwd())
