@@ -1,0 +1,163 @@
+import { type Ignore } from "ignore";
+import { EventEmitter } from "node:events";
+import { Dirent } from "node:fs";
+
+declare type EventNamePrifex = "before" | "after";
+
+declare type EventNameStuff = "Dir" | "File";
+
+declare type CtxItemEventType = "skip" | `${EventNamePrifex}${EventNameStuff}`;
+
+declare type CtxEventType = EventNamePrifex;
+
+declare type EventNameType = CtxEventType | CtxItemEventType;
+
+declare type InnerEventProp = "ctx" | "name" | "vm";
+
+declare type CtxEventProp = "ig" | "root" | "path" | "output";
+
+declare type CtxItemEventProp = "dir" | "entry";
+
+export interface PluginEvent<T> {
+  ig: Ignore,
+  root: string,
+  path: string,
+  output: any[],
+  entries: Array<Dirent<string>>,
+  // 只在 dir 和 file 事件中存在
+  dir?: string,
+  entry?: Dirent<string>,
+  // 内部自省的变量
+  ctx?: any & T,
+  name?: EventNameType,
+  vm: PluginVM<T>,
+}
+
+declare type CtxEvent<T> = Omit<PluginEvent<T>, InnerEventProp | CtxItemEventProp>;
+
+declare type CtxItemEvent<T> = Omit<PluginEvent<T>, InnerEventProp>;
+
+export type PluginRuntime<T> = {
+  [P in CtxEventType]: (event: CtxEvent<T>) => void;
+} & {
+  [T in CtxItemEventType]: (event: CtxItemEvent<T>) => void;
+}
+
+export type PluginVM<PluginCtx> = {
+  ctx: PluginCtx,
+  run: PluginRuntime<PluginCtx>,
+  bus: EventEmitter;
+} & {
+  [P in CtxEventType]: (cb: (event: Omit<PluginEvent<PluginCtx>, CtxItemEventProp>) => void) => void;
+} & {
+  [T in CtxItemEventType]: (cb: (event: PluginEvent<PluginCtx>) => void) => void;
+};
+
+export type PluginInst<PluginCtx> = (vm: PluginVM<PluginCtx>, option: any) => void;
+
+export type PluginInstMixin = PluginInst<any> | {
+  name?: string,
+  install: PluginInst<any>
+};
+
+class PluginRuntimeClass<T> implements PluginRuntime<T> {
+  bus: EventEmitter;
+  constructor(bus: EventEmitter) {
+    this.bus = bus;
+  }
+  #emit(name: string, event: any) {
+    this.bus.emit(name, event);
+  }
+  before(event: CtxEvent<T>) {
+    this.bus.emit("before", event);
+  }
+  after(event: CtxEvent<T>) {
+    this.bus.emit("after", event);
+  }
+  skip(event: CtxItemEvent<T>) {
+    this.bus.emit("skip", event)
+  };
+  beforeDir(event: CtxItemEvent<T>) {
+    this.#emit("beforeDir", event);
+  }
+  afterDir(event: CtxItemEvent<T>) {
+    this.#emit("afterDir", event);
+  }
+  beforeFile(event: CtxItemEvent<T>) {
+    this.#emit("beforeFile", event);
+  }
+  afterFile(event: CtxItemEvent<T>) {
+    this.#emit("afterFile", event);
+  }
+}
+
+class LifedVM<T> implements Omit<PluginVM<T>, 'ctx' | 'run' | EventNameType> {
+  bus: EventEmitter;
+  constructor(bus?: EventEmitter) {
+    this.bus = bus ?? new EventEmitter();
+  }
+  #on(name: string, cb: (event: PluginEvent<T>) => void) {
+    const wraped = (ev: any) => {
+      cb({
+        ...ev,
+        vm: this,
+        name,
+      })
+    }
+    this.bus.on(name, wraped)
+  }
+}
+
+class PluginVMClass<T> implements PluginVM<T> {
+  ctx: any & T;
+  run: PluginRuntime<T>;
+  bus: EventEmitter;
+  plugins: Array<PluginInstMixin> = [];
+  constructor(ctx: object = {}) {
+    this.ctx = ctx;
+    this.bus = new EventEmitter();
+    this.run = new PluginRuntimeClass(this.bus);
+  }
+  #on(name: string, cb: (event: PluginEvent<T>) => void) {
+    const wraped = (ev: any) => {
+      cb({
+        ...ev,
+        vm: this,
+        name,
+        ctx: this.ctx,
+      })
+    }
+    this.bus.on(name, wraped)
+  }
+  before(cb: (event: Omit<PluginEvent<T>, CtxItemEventProp>) => void) { this.#on("before", cb); }
+  after(cb: (event: Omit<PluginEvent<T>, CtxItemEventProp>) => void) { this.#on("after", cb); }
+  skip(cb: (event: PluginEvent<T>) => void) { this.#on("skip", cb); }
+  beforeDir(cb: (event: PluginEvent<T>) => void) { this.#on("beforeDir", cb); }
+  afterDir(cb: (event: PluginEvent<T>) => void) { this.#on("afterDir", cb); }
+  beforeFile(cb: (event: PluginEvent<T>) => void) { this.#on("beforeFile", cb); }
+  afterFile(cb: (event: PluginEvent<T>) => void) { this.#on("afterFile", cb); }
+  add(pluginInst: PluginInstMixin, conf?: any) {
+    if (this.plugins.includes(pluginInst)) {
+      console.log(`${pluginInst?.name} 已经注册！`);
+      return;
+    }
+    if (typeof pluginInst == "function") {
+      pluginInst(this, conf);
+      this.plugins.push(pluginInst);
+      return;
+    }
+    if (typeof pluginInst == "object" && typeof pluginInst.install === "function") {
+      pluginInst.install(this, conf);
+      this.plugins.push(pluginInst);
+      return;
+    }
+    console.error(`${(pluginInst as any)?.name ?? "未知插件"} 不是一个Plugin`);
+  }
+}
+
+export { PluginRuntimeClass, PluginVMClass, LifedVM };
+export default {
+  PluginRuntimeClass,
+  PluginVMClass,
+  LifedVM,
+}

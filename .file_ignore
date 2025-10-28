@@ -1,0 +1,34 @@
+
+## 忽略 node_modules 目录
+**/node_modules
+**/site-packages
+
+## 忽略构建输出目录
+**/dist
+**/build
+**/target
+
+## 忽略python文件夹
+__pycache__
+
+##
+__tests__
+
+##
+_deps
+
+.git
+.github
+.gitlab
+.svn
+.idea
+.vscode
+.devcontainer
+.cache
+
+##
+.mvn
+.gradle
+.cmake
+.jenkins
+.vuepress
