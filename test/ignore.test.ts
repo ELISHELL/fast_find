@@ -16,7 +16,10 @@ it('test ignore', async () => {
     expect(ig.ignores("sdaf/node_modules/123123")).toMatchInlineSnapshot(`true`)
 
     expect(ig.ignores("sdaf/123123.node_modules/")).toMatchInlineSnapshot(`false`)
+    
     expect(ig.ignores("sdaf/.node_modules")).toMatchInlineSnapshot(`false`)
     expect(ig.ignores(".node_modules")).toMatchInlineSnapshot(`false`)
+    expect(ig.ignores(".sub/node_modules")).toMatchInlineSnapshot(`true`)
+
 
 })

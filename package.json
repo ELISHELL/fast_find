@@ -3,10 +3,22 @@
   "version": "1.0.0",
   "type": "module",
   "description": "",
-  "main": "index.js",
+  "main": "dist/src/index.js",
+  "bin": {
+    "fast_find": "dist/src/index.js"
+  },
   "scripts": {
     "build": "tsc",
-    "dev": "tsc && node dist/src/index.js",
+    "dev": "tsc && node dist/src/cli.js",
+    "cmd": "tsc && node dist/src/cli.js ",
+    "cmd_h": "tsc && node dist/src/cli.js -h",
+    "cmd_v": "tsc && node dist/src/cli.js -v",
+    "cmd_s": "tsc && node dist/src/cli.js search log.ts -p TreePlugin -p !ScopePlugin",
+    "cmd_s_h": "tsc && node dist/src/cli.js search -h",
+    "cmd_i": "tsc && node dist/src/cli.js i TreePlugin",
+    "cmd_i_h": "tsc && node dist/src/cli.js i -h",
+    "cmd_u": "tsc && node dist/src/cli.js use TreePlugin",
+    "cmd_u_h": "tsc && node dist/src/cli.js use -h",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,11 +27,13 @@
   "packageManager": "pnpm@10.18.3",
   "dependencies": {
     "@inquirer/prompts": "^7.9.0",
+    "@types/yargs": "^17.0.34",
     "chalk": "^5.6.2",
     "figlet": "^1.9.3",
     "ignore": "^7.0.5",
     "inquirer-file-selector": "^1.0.1",
-    "single-line-log": "^1.1.2"
+    "single-line-log": "^1.1.2",
+    "yargs": "^18.0.0"
   },
   "devDependencies": {
     "@types/node": "^24.9.1",

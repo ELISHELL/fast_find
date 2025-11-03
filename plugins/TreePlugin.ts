@@ -1,6 +1,5 @@
 import chalk from "chalk";
-import type { PluginVM } from "../src/plugin_runtime.js";
-import { log as slog } from "../src/log.js";
+import type { PluginVM } from "../src/plugin/runtime.js";
 
 declare interface TreeCtx {
     treeCnt: number
@@ -13,25 +12,28 @@ declare interface TreeCtx {
 const TreePlugin = (vm: PluginVM<TreeCtx>, conf?: any) => {
     let stack: number[] = [];
     Object.assign(vm.ctx, {
-        scopeCnt: 0
+        treeCnt: 0
     })
     vm.before(({ ctx }) => {
-        stack.push(ctx.scopeCnt);
-        ctx.scopeCnt = 0;
-    });
+        stack.push(ctx.treeCnt);
+        ctx.treeCnt = 0;
+    }, TreePlugin);
     vm.beforeDir(({ ctx }) => {
-        ctx.scopeCnt++;
-    })
+        ctx.treeCnt++;
+    }, TreePlugin)
     vm.beforeFile(({ ctx }) => {
-        ctx.scopeCnt++;
-    })
-    vm.after(async ({ ctx, path }) => {
+        ctx.treeCnt++;
+    }, TreePlugin)
+    vm.after(async ({ ctx, path, log }) => {
         if (conf?.isDebug) {
-            slog("single", chalk.gray(`文件夹 ${path} 含有 ${ctx.scopeCnt} 项`));
+            log("single", chalk.gray(`文件夹 ${path} 含有 ${ctx.treeCnt} 项`));
         }
-        let oldCnt = stack.pop();
-        ctx.scopeCnt += oldCnt; // 将之前的合并
-    });
+        let oldCnt = stack.pop() || 0;
+        ctx.treeCnt += oldCnt; // 将之前的合并
+    }, TreePlugin);
+    vm.Log(({ ctx, log }) => {
+        log("stable", chalk.cyan(`${TreePlugin.name} 总计扫描文件夹：${ctx.treeCnt} 个`));
+    }, TreePlugin);
 };
 
-export { TreePlugin };
+export default TreePlugin;

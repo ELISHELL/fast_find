@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import type { PluginEvent, PluginInst, PluginVM } from "../src/plugin_runtime.ts";
+import type { PluginVM } from "../src/plugin/runtime.ts";
 
 declare interface CntCtx {
     skip: number,
@@ -15,29 +15,31 @@ const CntPlugin = (vm: PluginVM<CntCtx>, conf: any) => {
         file: 0,
         deep: 0,
     })
-    // vm.before((event: PluginEvent<CntCtx>) => { })
+    // vm.before((event: PluginEvent<CntCtx>) => { },CntPlugin)
     vm.skip(({
         ctx
     }) => {
         ctx.skip++;
-    })
+    }, CntPlugin)
+
     vm.beforeDir(({
         ctx
     }) => {
         ctx.dir++;
         ctx.deep++;
-    })
+    }, CntPlugin)
     vm.afterDir(({ ctx }) => {
         ctx.deep--;
-    })
+    }, CntPlugin)
     vm.beforeFile(({
         ctx
     }) => {
         ctx.file++;
-    })
-    // vm.after((event: PluginEvent<CntCtx>) => { })
+    }, CntPlugin)
+    vm.Log(({ ctx, log }) => {
+        log('stable', chalk.cyan(`${CntPlugin.name} 扫描统计：跳过 ${ctx.skip} 个，文件夹 ${ctx.dir} 个，文件 ${ctx.file} 个。`));
+    }, CntPlugin);
+    // vm.after((event: PluginEvent<CntCtx>) => { },CntPlugin)
 }
 
-export {
-    CntPlugin
-}
+export default CntPlugin;

@@ -1,7 +1,7 @@
 import { stdout } from "single-line-log";
 
 
-declare type logCtx = "stable" | "single" | "clear"
+export type LogCtx = "stable" | "single" | "clear"
 
 const LogFrame = {
     stable: [] as any[][],
@@ -14,7 +14,7 @@ LogFrame.single.push([]);
 LogFrame.single.push([]);
 LogFrame.single.push([]);
 
-export const log = (ctx: logCtx, ...args: any[]) => {
+export const log = (ctx: LogCtx, ...args: any[]) => {
     let str = args.join(" ");
     if (ctx == "stable") {
         stdout("  \r");

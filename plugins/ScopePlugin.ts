@@ -1,8 +1,7 @@
 import chalk from "chalk";
 import ignore, { type Ignore } from "ignore";
 import { join } from "node:path";
-import type { PluginVM } from "../src/plugin_runtime.js";
-import { log as slog } from "../src/log.js";
+import type { PluginVM } from "../src/plugin/runtime.js";
 
 declare interface ScopeCtx {
   isDebug?: boolean,
@@ -55,7 +54,7 @@ const ScopePlugin = (vm: PluginVM<ScopeCtxWrap>, conf?: any) => {
       needClear: 0,
     },
   })
-  vm.before(async ({ ctx, path, entries }) => {
+  vm.before(async ({ ctx, path, entries, log }) => {
     // 压栈
     let sup = ctx[CTX_KEY];
     stack.push(sup);
@@ -83,50 +82,50 @@ const ScopePlugin = (vm: PluginVM<ScopeCtxWrap>, conf?: any) => {
       if (temp.isSvn) {
         versionManger = chalk.cyan("(svn)")
       }
-      if(path == process.cwd()) {
+      if (path == process.cwd()) {
         versionManger += chalk.magenta(" ⭐⭐⭐ ");
       }
       if (!sup.isMaven && temp.isMaven) {
-        slog("stable", chalk.yellow(`发现 maven  项目:`), chalk.blue(path), versionManger);
+        log("stable", chalk.yellow(`发现 maven  项目:`), chalk.blue(path), versionManger);
         temp.needClear++;
         matched = true;
       }
       if (!sup.isNode && temp.isNode) {
-        slog("stable", chalk.yellow(`发现 node   项目:`), chalk.blue(path), versionManger);
+        log("stable", chalk.yellow(`发现 node   项目:`), chalk.blue(path), versionManger);
         temp.needClear++;
         matched = true;
       }
       if (!sup.isEsp && temp.isEsp) {
-        slog("stable", chalk.yellow(`发现 esp32  项目:`), chalk.blue(path), versionManger);
+        log("stable", chalk.yellow(`发现 esp32  项目:`), chalk.blue(path), versionManger);
         temp.needClear++;
         matched = true;
       } else if (!sup.isCmake && temp.isCmake) {
-        slog("stable", chalk.yellow(`发现 cmake  项目:`), chalk.blue(path), versionManger);
+        log("stable", chalk.yellow(`发现 cmake  项目:`), chalk.blue(path), versionManger);
         temp.needClear++;
         matched = true;
       }
       if (!sup.isGo && temp.isGo) {
-        slog("stable", chalk.yellow(`发现 go     项目:`), chalk.blue(path), versionManger);
+        log("stable", chalk.yellow(`发现 go     项目:`), chalk.blue(path), versionManger);
         temp.needClear++;
         matched = true;
       }
       if (temp.isPython) {
-        slog("stable", chalk.yellow(`发现 python 项目:`), chalk.blue(path), versionManger);
+        log("stable", chalk.yellow(`发现 python 项目:`), chalk.blue(path), versionManger);
         temp.needClear++;
         matched = true;
       }
       if (temp.isPythonVenv) {
-        slog("stable", chalk.yellow(`发现 python 环境:`), chalk.green(path), versionManger);
+        log("stable", chalk.yellow(`发现 python 环境:`), chalk.green(path), versionManger);
         temp.needClear++;
         matched = true;
       }
       if (!matched) {
         if (temp.isGit) {
-          slog("stable", chalk.yellow(`发现 git    仓库:`), chalk.green(path), versionManger);
+          log("stable", chalk.yellow(`发现 git    仓库:`), chalk.green(path), versionManger);
           temp.needClear++;
         }
         if (temp.isSvn) {
-          slog("stable", chalk.yellow(`发现 svn    仓库:`), chalk.green(path), versionManger);
+          log("stable", chalk.yellow(`发现 svn    仓库:`), chalk.green(path), versionManger);
           temp.needClear++;
         }
       }
@@ -174,13 +173,7 @@ const ScopePlugin = (vm: PluginVM<ScopeCtxWrap>, conf?: any) => {
       isPython: sup.isPython || temp.isPython,
       isPythonVenv: sup.isPythonVenv || temp.isPythonVenv,
     };
-  });
-  vm.beforeDir(({ ctx }) => {
-    ctx.scopeCnt++;
-  })
-  vm.beforeFile(({ ctx }) => {
-    ctx.scopeCnt++;
-  })
+  }, ScopePlugin);
   vm.after(({ ctx, path }) => {
     let sup = stack.pop();
     if (sup) {
@@ -190,7 +183,9 @@ const ScopePlugin = (vm: PluginVM<ScopeCtxWrap>, conf?: any) => {
       //   stdout.clear();
       // }
     }
-  });
+  }, ScopePlugin);
+  // vm.Log(({ ctx }) => { }, ScopePlugin);
 };
 
-export { ScopePlugin };
+
+export default ScopePlugin;
