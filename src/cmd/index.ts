@@ -14,8 +14,9 @@ export const builder: CommandBuilder = (yargs: Argv) => {
   return yargs.option('debug', {
     alias: 'D',
     type: 'boolean',
+    require: false,
+    default: false,
     description: 'Enable debug mode',
-    default: false
   });
 }
 

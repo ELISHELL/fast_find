@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "tsc && node dist/src/cli.js",
+    "dev": "esno ./src/cli.ts",
     "cmd": "tsc && node dist/src/cli.js ",
     "cmd_h": "tsc && node dist/src/cli.js -h",
     "cmd_v": "tsc && node dist/src/cli.js -v",
@@ -38,6 +38,7 @@
   "devDependencies": {
     "@types/node": "^24.9.1",
     "@types/single-line-log": "^1.1.2",
+    "esno": "^4.8.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.3"
   }
