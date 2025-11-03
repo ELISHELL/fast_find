@@ -5,7 +5,7 @@
   "description": "",
   "main": "dist/src/index.js",
   "bin": {
-    "fast_find": "dist/src/index.js"
+    "fast_find": "bin/fast_find.mjs"
   },
   "scripts": {
     "build": "tsc",
