@@ -1,0 +1,17 @@
+{
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "tsconfig.json": "tsconfig.*.json, .env* , env.d.ts",
+    "vite.config.*": "jsconfig*, vitest.config.*, cypress.config.*, playwright.config.*",
+    "package.json": "package-lock.json, pnpm*,capacitor.config.ts, uno.config.ts, .yarnrc*, yarn*, .eslint*, eslint*, .oxlint*, oxlint*, .prettier*, prettier*, .editorconfig"
+  },
+  "prettier.enable": false,
+  "editor.formatOnSave": false,
+  "editor.codeActionsOnSave.rules": null,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.removeUnusedImports": "never",
+    "source.organizeImports": "never"
+  },
+  "editor.tabSize": 2
+}

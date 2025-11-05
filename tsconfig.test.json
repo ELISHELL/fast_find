@@ -1,0 +1,31 @@
+{
+  "include": [
+    "./test/**/*",
+    "env.d.ts",
+  ],
+  "references": [
+    {
+      "path": "tsconfig.app.json"
+    },
+    {
+      "path": "tsconfig.plugins.json"
+    }
+  ],
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "lib": [
+      "esnext",
+    ],
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.vitest.tsbuildinfo",
+    "rootDir": "test",
+    "outDir": "dist/test",
+    "declarationDir": "./dist/test/types",
+    "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": true,
+    "types": [
+      "node",
+      "vitest/globals"
+    ],
+  }
+}

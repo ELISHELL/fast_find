@@ -1,28 +1,29 @@
-import chalk from "chalk";
-import ignore, { type Ignore } from "ignore";
-import { join } from "node:path";
+import type { Ignore } from "ignore";
 import type { PluginVM } from "../src/plugin/runtime.js";
+import { join } from "node:path";
+import chalk from "chalk";
+import ignore from "ignore";
 
 declare interface ScopeCtx {
-  isDebug?: boolean,
-  isSvn: boolean,
-  isGit: boolean,
-  isMaven: boolean,
-  isNode: boolean,
-  isGo: boolean,
-  isEsp: boolean,
-  isCmake: boolean,
-  isPython: boolean,
-  isPythonVenv: boolean,
-  needClear: number,
-  ig: Ignore,
+  isDebug?: boolean;
+  isSvn: boolean;
+  isGit: boolean;
+  isMaven: boolean;
+  isNode: boolean;
+  isGo: boolean;
+  isEsp: boolean;
+  isCmake: boolean;
+  isPython: boolean;
+  isPythonVenv: boolean;
+  needClear: number;
+  ig: Ignore;
 }
 
 const CTX_KEY = "scope_plugin_ctx";
 
 declare interface ScopeCtxWrap {
-  ig: Ignore,
-  [CTX_KEY]: ScopeCtx
+  ig: Ignore;
+  [CTX_KEY]: ScopeCtx;
 }
 
 /**
@@ -33,11 +34,11 @@ declare interface ScopeCtxWrap {
  * 含有 `CMakeList.txt` 的文件夹就是 cmake 项目
  * 含有 `go.mod` 的文件夹就是 go 项目
  * 含有 `requestlibs.txt` 的文件夹就是 python 项目
- * @param vm 
- * @param conf 
+ * @param vm
+ * @param conf
  */
-const ScopePlugin = (vm: PluginVM<ScopeCtxWrap>, conf?: any) => {
-  let stack: ScopeCtx[] = [];
+function ScopePlugin(vm: PluginVM<ScopeCtxWrap>, conf?: any) {
+  const stack: ScopeCtx[] = [];
   Object.assign(vm.ctx, {
     [CTX_KEY]: {
       isDebug: false,
@@ -53,22 +54,22 @@ const ScopePlugin = (vm: PluginVM<ScopeCtxWrap>, conf?: any) => {
       ig: vm.ctx.ig,
       needClear: 0,
     },
-  })
+  });
   vm.before(async ({ ctx, path, entries, log }) => {
     // 压栈
-    let sup = ctx[CTX_KEY];
+    const sup = ctx[CTX_KEY];
     stack.push(sup);
     // 生成当前上下文
-    let temp: ScopeCtx = {
-      isSvn: !!entries.find(file => file.isDirectory() && file.name == ".svn"),
-      isGit: !!entries.find(file => file.isDirectory() && file.name == ".git"),
-      isMaven: !!entries.find(file => file.isFile() && file.name == "pom.xml"),
-      isNode: !!entries.find(file => file.isFile() && file.name == "package.json"),
-      isEsp: !!entries.find(file => file.isFile() && file.name == "sdkconfig"),
-      isCmake: !!entries.find(file => file.isFile() && file.name == "CMakeLists.txt"),
-      isGo: !!entries.find(file => file.isFile() && file.name == "go.mod"),
-      isPython: !!entries.find(file => file.isFile() && file.name == "requirements.txt"),
-      isPythonVenv: !!entries.find(file => file.isFile() && file.name == "venvlauncher.exe"),
+    const temp: ScopeCtx = {
+      isSvn: !!entries.find(file => file.isDirectory() && file.name === ".svn"),
+      isGit: !!entries.find(file => file.isDirectory() && file.name === ".git"),
+      isMaven: !!entries.find(file => file.isFile() && file.name === "pom.xml"),
+      isNode: !!entries.find(file => file.isFile() && file.name === "package.json"),
+      isEsp: !!entries.find(file => file.isFile() && file.name === "sdkconfig"),
+      isCmake: !!entries.find(file => file.isFile() && file.name === "CMakeLists.txt"),
+      isGo: !!entries.find(file => file.isFile() && file.name === "go.mod"),
+      isPython: !!entries.find(file => file.isFile() && file.name === "requirements.txt"),
+      isPythonVenv: !!entries.find(file => file.isFile() && file.name === "venvlauncher.exe"),
       ig: ignore(),
       isDebug: conf?.isDebug,
       needClear: 0,
@@ -77,12 +78,12 @@ const ScopePlugin = (vm: PluginVM<ScopeCtxWrap>, conf?: any) => {
       let versionManger = "";
       let matched = false;
       if (temp.isGit) {
-        versionManger = chalk.cyan("(git)")
+        versionManger = chalk.cyan("(git)");
       }
       if (temp.isSvn) {
-        versionManger = chalk.cyan("(svn)")
+        versionManger = chalk.cyan("(svn)");
       }
-      if (path == process.cwd()) {
+      if (path === process.cwd()) {
         versionManger += chalk.magenta(" ⭐⭐⭐ ");
       }
       if (!sup.isMaven && temp.isMaven) {
@@ -99,7 +100,8 @@ const ScopePlugin = (vm: PluginVM<ScopeCtxWrap>, conf?: any) => {
         log("stable", chalk.yellow(`发现 esp32  项目:`), chalk.blue(path), versionManger);
         temp.needClear++;
         matched = true;
-      } else if (!sup.isCmake && temp.isCmake) {
+      }
+      else if (!sup.isCmake && temp.isCmake) {
         log("stable", chalk.yellow(`发现 cmake  项目:`), chalk.blue(path), versionManger);
         temp.needClear++;
         matched = true;
@@ -132,30 +134,31 @@ const ScopePlugin = (vm: PluginVM<ScopeCtxWrap>, conf?: any) => {
     }
     // 编写当前
     temp.ig.add(ctx.ig);
-    if (sup.isSvn != temp.isSvn) {
+    if (sup.isSvn !== temp.isSvn) {
       temp.ig.add([".svn"]);
     }
-    if (sup.isGit != temp.isGit) {
+    if (sup.isGit !== temp.isGit) {
       temp.ig.add([".git"]);
     }
-    if (sup.isMaven != temp.isMaven) {
+    if (sup.isMaven !== temp.isMaven) {
       temp.ig.add(["target", ".mvn"]);
     }
-    if (sup.isEsp != temp.isEsp) {
+    if (sup.isEsp !== temp.isEsp) {
       temp.ig.add(["build", "components", "managed_components"]);
-    } else if (sup.isCmake != temp.isCmake) {
+    }
+    else if (sup.isCmake !== temp.isCmake) {
       temp.ig.add([join(path, "build"), "_deps"]);
     }
-    if (sup.isNode != temp.isNode) {
+    if (sup.isNode !== temp.isNode) {
       temp.ig.add(["dist", "node_modules"]);
     }
-    if (sup.isGo != temp.isGo) {
+    if (sup.isGo !== temp.isGo) {
       temp.ig.add([join(path, "dist"), join(path, "tmp")]);
     }
-    if (sup.isPython != temp.isPython) {
+    if (sup.isPython !== temp.isPython) {
       temp.ig.add([join(path, "**", "models"), "__pycache__", "site-packages"]);
     }
-    if (sup.isPythonVenv != temp.isPythonVenv) {
+    if (sup.isPythonVenv !== temp.isPythonVenv) {
       temp.ig.add(join(path, "**"));
     }
     // 切换上下文
@@ -175,7 +178,7 @@ const ScopePlugin = (vm: PluginVM<ScopeCtxWrap>, conf?: any) => {
     };
   }, ScopePlugin);
   vm.after(({ ctx, path }) => {
-    let sup = stack.pop();
+    const sup = stack.pop();
     if (sup) {
       ctx.ig = sup.ig;
       ctx[CTX_KEY] = sup;
@@ -185,7 +188,6 @@ const ScopePlugin = (vm: PluginVM<ScopeCtxWrap>, conf?: any) => {
     }
   }, ScopePlugin);
   // vm.Log(({ ctx }) => { }, ScopePlugin);
-};
-
+}
 
 export default ScopePlugin;

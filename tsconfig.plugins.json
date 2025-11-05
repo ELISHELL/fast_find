@@ -1,0 +1,29 @@
+{
+  "include": [
+    "plugins/**/*",
+    "env.d.ts",
+  ],
+  "references": [
+    {
+      "path": "tsconfig.app.json"
+    }
+  ],
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "lib": [
+      "esnext",
+    ],
+    "sourceMap": false,
+    "declarationMap": false,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.plugins.tsbuildinfo",
+    "rootDir": "plugins",
+    "outDir": "dist/plugins",
+    "declarationDir": "./dist/plugins/types",
+    // "allowImportingTsExtensions": true,
+    // "emitDeclarationOnly": true,
+    "types": [
+      "node"
+    ],
+  }
+}

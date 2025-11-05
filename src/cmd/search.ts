@@ -1,48 +1,48 @@
-import chalk from "chalk";
 import type { Argv } from "yargs";
-import { loadIgnore, walk, makeNameMatcher } from "../core.js";
-import { PluginVMClass } from "../plugin/runtime.js";
+import chalk from "chalk";
+import { loadIgnore, makeNameMatcher, walk } from "../core.js";
 import { log } from "../log.js";
+import { PluginVMClass } from "../plugin/runtime.js";
 
-export const command = ['run <matcher> [args]', 'search'];
-export const desc = 'start searching from current directory with name matcher';
-export const builder = (yargs: Argv) => {
-  return yargs.positional('matcher', {
-    describe: 'name matcher string or regex',
-    type: 'string',
-    required: true
+export const command = ["run <matcher> [args]", "search"];
+export const desc = "start searching from current directory with name matcher";
+export function builder(yargs: Argv) {
+  return yargs.positional("matcher", {
+    describe: "name matcher string or regex",
+    type: "string",
+    required: true,
   }).options({
-    "root": {
+    root: {
       alias: "r",
       type: "string",
       description: "Specify the root directory to start searching from",
-      default: '.'
+      default: ".",
     },
-    'plugin': {
-      alias: 'p',
-      type: 'string',
-      description: 'Specify a plugin file to load',
+    plugin: {
+      alias: "p",
+      type: "string",
+      description: "Specify a plugin file to load",
       default: [],
       demandOption: false,
-      multiple: true
+      multiple: true,
     },
-    "debug": {
+    debug: {
       alias: "D",
       type: "boolean",
       description: "Enable debug mode",
-      default: false
+      default: false,
     },
-    'help': {
-      alias: 'h',
-      type: 'boolean',
-      description: 'Show help'
+    help: {
+      alias: "h",
+      type: "boolean",
+      description: "Show help",
     },
-  })
-};
+  });
+}
 
-export const handler = async (yargs: any) => {
-  const ig = await loadIgnore(yargs.root)
-  const results: any[] = []
+export async function handler(yargs: any) {
+  const ig = await loadIgnore(yargs.root);
+  const results: any[] = [];
   const vm = new PluginVMClass({
     ig,
     rootDir: yargs.root,
@@ -57,9 +57,10 @@ export const handler = async (yargs: any) => {
   };
 
   for (const pluginName of yargs.plugin) {
-    if (pluginName.trim().startsWith('!')) {
+    if (pluginName.trim().startsWith("!")) {
       pluginOptions.excludePlugins.push(pluginName.trim().slice(1));
-    } else {
+    }
+    else {
       pluginOptions.includePlugins.push(pluginName.trim());
     };
   }
@@ -75,18 +76,18 @@ export const handler = async (yargs: any) => {
 
   const t0 = Date.now();
   await walk(process.cwd(), results, vm);
-  const match = makeNameMatcher(yargs.matcher)
-  const filtered = results.filter(item => match(item.fullPath))
+  const match = makeNameMatcher(yargs.matcher);
+  const filtered = results.filter(item => match(item.fullPath));
   const t1 = Date.now();
   const dt = t1 - t0;
   log("clear");
   vm.log();
-  console.log(chalk.cyan(`\n查找完成：${filtered.length} 个文件，耗时 ${dt} ms\n`))
+  console.log(chalk.cyan(`\n查找完成：${filtered.length} 个文件，耗时 ${dt} ms\n`));
   for (const f of filtered) {
-    console.log(chalk.green(f.fullPath))
+    console.log(chalk.green(f.fullPath));
   }
   console.log(" ");
-};
+}
 
 export default {
   command,
